@@ -1,0 +1,11 @@
+printf "%s\n" \
+"node_modules" \
+".env" \
+"npm-debug.log*" \
+".DS_Store" \
+".vercel" \
+".render" \
+"*.sqlite" \
+"*.db" \
+"*.db-journal" > .gitignore
+"tracking.db"

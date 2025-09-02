@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Parcel - <%= trackingNumber %></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+    .status, .location {
+      font-size: 1.2em;
+      text-align: center;
+    }
+    .delivered {
+      color: green;
+      font-weight: bold;
+      text-align: center;
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: #f3f3f3;
+      border-radius: 25px;
+      margin-top: 20px;
+      height: 20px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .progress-bar span {
+      display: block;
+      height: 100%;
+      background-color: #4caf50;
+      border-radius: 25px;
+    }
+    .tracking-link {
+      display: block;
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tracking Parcel: <%= trackingNumber %></h1>
+
+  <p class="status">Created At: <strong><%= new Date(parcel.createdAt).toLocaleString() %></strong></p>
+  <p class="status">Last Updated: <strong><%= history.length ? history[history.length - 1].timestamp : 'N/A' %></strong></p>
+  <p class="status">Current Location: <strong><%= currentLocation %></strong></p>
+
+  <% if (isDelivered) { %>
+    <p class="delivered">Parcel Delivered!</p>
+  <% } %>
+
+  <div class="progress-bar">
+    <span style="width: <%= ((currentStep + 1) / locations.length) * 100 %>%;"></span>
+  </div>
+
+  <h2>Tracking History</h2>
+  <ul>
+    <% history.forEach(event => { %>
+      <li>
+        <span class="status"><%= event.location %></span><br>
+        <span class="location">Timestamp: <%= event.timestamp %></span>
+      </li>
+    <% }) %>
+  </ul>
+
+  <p class="tracking-link">
+    Share this link with others: 
+    <a href="/track/<%= trackingNumber %>">/track/<%= trackingNumber %></a>
+  </p>
+</body>
+</html>
