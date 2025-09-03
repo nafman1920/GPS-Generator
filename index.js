@@ -1,16 +1,28 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const mongoose = require('mongoose');
 const session = require('express-session');
+const path = require('path');
 require('dotenv').config();
+
+const Parcel = require('./models/Parcels');
+const History = require('./models/History');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+console.log("MONGODB_URI:", process.env.MONGODB_URI); // ✅ debugging line
+
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("✅ Connected to MongoDB"))
+.catch(err => console.error("❌ MongoDB connection error:", err));
+
+// ----------------- MIDDLEWARE -----------------
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'fallbacksecret',
   resave: false,
@@ -29,29 +41,7 @@ const locations = [
   'London, United Kingdom (Delivered)'
 ];
 
-// ---------------- DATABASE ----------------
-const db = new sqlite3.Database('./tracking.db');
-
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS parcels (
-      trackingNumber TEXT PRIMARY KEY,
-      createdAt TEXT
-    )
-  `);
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      trackingNumber TEXT,
-      location TEXT,
-      timestamp TEXT,
-      FOREIGN KEY (trackingNumber) REFERENCES parcels(trackingNumber)
-    )
-  `);
-});
-
-// ---------------- HELPERS ----------------
+// ----------------- HELPERS -----------------
 function generateTrackingNumber() {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let tracking = '1Z';
@@ -68,24 +58,21 @@ function getCurrentStep(parcel) {
   return Math.min(diffDays, locations.length - 1);
 }
 
-function updateHistoryIfNeeded(trackingNumber, parcel, callback) {
+async function updateHistoryIfNeeded(trackingNumber, parcel) {
   const currentStep = getCurrentStep(parcel);
+  const historyCount = await History.countDocuments({ trackingNumber });
 
-  db.all(`SELECT COUNT(*) as count FROM history WHERE trackingNumber = ?`, [trackingNumber], (err, rows) => {
-    if (err) return callback(err);
-
-    const historyCount = rows[0].count;
-
-    if (historyCount < currentStep + 1) {
-      for (let i = historyCount; i <= currentStep; i++) {
-        db.run(
-          `INSERT INTO history (trackingNumber, location, timestamp) VALUES (?, ?, ?)`,
-          [trackingNumber, locations[i], new Date().toLocaleString()]
-        );
-      }
+  if (historyCount < currentStep + 1) {
+    const newEntries = [];
+    for (let i = historyCount; i <= currentStep; i++) {
+      newEntries.push({
+        trackingNumber,
+        location: locations[i],
+        timestamp: new Date()
+      });
     }
-    callback();
-  });
+    await History.insertMany(newEntries);
+  }
 }
 
 function ensureAdmin(req, res, next) {
@@ -93,9 +80,10 @@ function ensureAdmin(req, res, next) {
   res.redirect('/admin/login');
 }
 
-// ---------------- PUBLIC ROUTES ----------------
+// ----------------- PUBLIC ROUTES -----------------
+
 app.get('/', (req, res) => {
-  res.render('index'); 
+  res.render('index');
 });
 
 app.post('/track', (req, res) => {
@@ -103,36 +91,38 @@ app.post('/track', (req, res) => {
   res.redirect(`/track/${trackingNumber}`);
 });
 
-app.get('/track/:trackingNumber', (req, res) => {
+app.get('/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;
 
-  db.get(`SELECT * FROM parcels WHERE trackingNumber = ?`, [trackingNumber], (err, parcel) => {
-    if (err || !parcel) return res.status(404).send("Tracking number not found.");
+  try {
+    const parcel = await Parcel.findOne({ trackingNumber });
+    if (!parcel) return res.status(404).send("Tracking number not found.");
 
-    updateHistoryIfNeeded(trackingNumber, parcel, () => {
-      const currentStep = getCurrentStep(parcel);
-      const currentLocation = locations[currentStep] || "Delivered";
-      const isDelivered = currentStep >= locations.length - 1;
+    await updateHistoryIfNeeded(trackingNumber, parcel);
 
-      db.all(`SELECT * FROM history WHERE trackingNumber = ? ORDER BY id ASC`, [trackingNumber], (err, history) => {
-        if (err) return res.status(500).send("Database error");
+    const currentStep = getCurrentStep(parcel);
+    const currentLocation = locations[currentStep] || "Delivered";
+    const isDelivered = currentStep >= locations.length - 1;
 
-        res.render('track', {
-       trackingNumber,
-       currentLocation,
-       history,
-       isDelivered,
-        currentStep,
-         locations,
-         parcel   // ✅ add parcel so we can show createdAt in track.ejs
-       });
+    const history = await History.find({ trackingNumber }).sort({ timestamp: 1 });
 
-      });
+    res.render('track', {
+      trackingNumber,
+      currentLocation,
+      history,
+      isDelivered,
+      currentStep,
+      locations,
+      parcel
     });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database error");
+  }
 });
 
-// ---------------- ADMIN ROUTES ----------------
+// ----------------- ADMIN ROUTES -----------------
+
 app.get('/admin/login', (req, res) => {
   res.render('login', { error: null });
 });
@@ -153,43 +143,44 @@ app.get('/admin/logout', (req, res) => {
   res.redirect('/admin/login');
 });
 
-app.get('/admin', ensureAdmin, (req, res) => {
-  db.all(`SELECT * FROM parcels`, (err, parcels) => {
-    if (err) return res.status(500).send("DB error");
+// Updated admin route with camelCase keys matching admin.ejs:
+app.get('/admin', ensureAdmin, async (req, res) => {
+  try {
+    const parcels = await Parcel.find();
 
-    // Enrich parcels with current location and last updated
     const enrichedParcels = parcels.map(parcel => {
       const currentStep = getCurrentStep(parcel);
       const currentLocation = locations[currentStep] || "Delivered";
 
       return {
-        tracking_number: parcel.trackingNumber,
-        created_at: parcel.createdAt,
-        current_location: currentLocation,
-        last_updated: new Date(parcel.createdAt).toLocaleString()
+        trackingNumber: parcel.trackingNumber,
+        createdAt: parcel.createdAt,
+        currentLocation: currentLocation,
       };
     });
 
-    res.render("admin", { parcels: enrichedParcels });
-  });
+    res.render('admin', { parcels: enrichedParcels });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("DB error");
+  }
 });
 
-
-app.post('/admin/generate', ensureAdmin, (req, res) => {
+app.post('/admin/generate', ensureAdmin, async (req, res) => {
   const trackingNumber = generateTrackingNumber();
-  const createdAt = new Date().toISOString();
+  const createdAt = new Date();
 
-  db.run(
-    `INSERT INTO parcels (trackingNumber, createdAt) VALUES (?, ?)`,
-    [trackingNumber, createdAt],
-    (err) => {
-      if (err) return res.status(500).send("DB error");
-      res.redirect('/admin');
-    }
-  );
+  try {
+    await Parcel.create({ trackingNumber, createdAt });
+    res.redirect('/admin');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("DB error");
+  }
 });
 
-// ---------------- SERVER ----------------
+// ----------------- SERVER START -----------------
+
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

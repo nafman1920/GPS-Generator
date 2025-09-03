@@ -1,11 +1,14 @@
-printf "%s\n" \
-"node_modules" \
-".env" \
-"npm-debug.log*" \
-".DS_Store" \
-".vercel" \
-".render" \
-"*.sqlite" \
-"*.db" \
-"*.db-journal" > .gitignore
-"tracking.db"
+# Node modules
+node_modules/
+
+# Env file
+.env
+
+# Local database
+tracking.db
+*.sqlite
+*.db
+*.db-journal
+
+# Logs
+npm-debug.log*

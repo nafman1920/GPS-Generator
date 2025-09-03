@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Dashboard - Parcel Tracking</title>
   <style>
     body {
@@ -11,28 +11,24 @@
       margin: 0;
       padding: 20px;
     }
-
     .container {
       max-width: 1000px;
       margin: auto;
       background: #fff;
       padding: 30px;
       border-radius: 10px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
     h1 {
       text-align: center;
       margin-bottom: 30px;
       color: #333;
     }
-
     .generate-form {
       display: flex;
       justify-content: center;
       margin-bottom: 30px;
     }
-
     .generate-form button {
       background: #4caf50;
       color: white;
@@ -42,52 +38,42 @@
       font-size: 1em;
       cursor: pointer;
     }
-
     .generate-form button:hover {
       background: #45a049;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
-
     table th, table td {
       border: 1px solid #ddd;
       padding: 12px;
       text-align: center;
     }
-
     table th {
       background: #f3f3f3;
       font-weight: bold;
     }
-
     .status.in-transit {
       color: orange;
       font-weight: bold;
     }
-
     .status.delivered {
       color: green;
       font-weight: bold;
     }
-
     .link {
       color: #007bff;
       text-decoration: none;
     }
-
     .link:hover {
       text-decoration: underline;
     }
-
     .logout {
       text-align: center;
       margin-top: 20px;
     }
-
     .logout a {
       color: red;
       text-decoration: none;
@@ -123,17 +109,17 @@
           </tr>
         <% } else { %>
           <% parcels.forEach(parcel => { 
-               const isDelivered = parcel.current_location === "Delivered";
+               const isDelivered = parcel.currentLocation.toLowerCase() === 'delivered';
           %>
             <tr>
-              <td><%= parcel.tracking_number %></td>
-              <td><%= new Date(parcel.created_at).toLocaleString() %></td>
-              <td><%= parcel.current_location %></td>
+              <td><%= parcel.trackingNumber %></td>
+              <td><%= new Date(parcel.createdAt).toLocaleString() %></td>
+              <td><%= parcel.currentLocation %></td>
               <td class="status <%= isDelivered ? 'delivered' : 'in-transit' %>">
                 <%= isDelivered ? 'Delivered' : 'In Transit' %>
               </td>
               <td>
-                <a class="link" href="/track/<%= parcel.tracking_number %>" target="_blank">
+                <a class="link" href="/track/<%= parcel.trackingNumber %>" target="_blank">
                   View Parcel
                 </a>
               </td>

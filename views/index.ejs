@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Parcel Tracking</title>
   <style>
     body {
@@ -20,7 +20,7 @@
       background: #fff;
       padding: 30px;
       border-radius: 10px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
       text-align: center;
       width: 100%;
       max-width: 400px;
@@ -32,7 +32,7 @@
       color: #333;
     }
 
-    form input {
+    form input[type="text"] {
       padding: 10px;
       width: 100%;
       border: 1px solid #ccc;
@@ -50,6 +50,7 @@
       border-radius: 5px;
       font-size: 1em;
       cursor: pointer;
+      transition: background 0.2s ease;
     }
 
     button:hover {
@@ -64,15 +65,21 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <main class="container">
     <h1>Track Your Parcel</h1>
-    <form action="/track" method="POST">
-      <input type="text" name="trackingNumber" placeholder="Enter tracking number" required>
+    <form action="/track" method="POST" autocomplete="off">
+      <input 
+        type="text" 
+        name="trackingNumber" 
+        placeholder="Enter tracking number" 
+        required 
+        aria-label="Tracking Number"
+      />
       <button type="submit">Track Parcel</button>
     </form>
     <div class="footer">
       <p>Powered by Parcel Tracking System</p>
     </div>
-  </div>
+  </main>
 </body>
 </html>

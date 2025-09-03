@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Track Parcel - <%= trackingNumber %></title>
   <style>
     body {
@@ -18,13 +18,15 @@
       margin-bottom: 20px;
     }
     .status, .location {
-      font-size: 1.2em;
+      font-size: 1.1em;
       text-align: center;
+      margin-bottom: 10px;
     }
     .delivered {
       color: green;
       font-weight: bold;
       text-align: center;
+      margin-top: 10px;
     }
     .progress-bar {
       width: 100%;
@@ -33,47 +35,72 @@
       margin-top: 20px;
       height: 20px;
       box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
     }
     .progress-bar span {
       display: block;
       height: 100%;
       background-color: #4caf50;
-      border-radius: 25px;
+      transition: width 0.3s ease;
     }
     .tracking-link {
       display: block;
-      margin-top: 20px;
+      margin-top: 30px;
       text-align: center;
+      font-size: 0.95em;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      background: #fff;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    li .status {
+      font-weight: bold;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
     }
   </style>
 </head>
 <body>
   <h1>Tracking Parcel: <%= trackingNumber %></h1>
 
-  <p class="status">Created At: <strong><%= new Date(parcel.createdAt).toLocaleString() %></strong></p>
-  <p class="status">Last Updated: <strong><%= history.length ? history[history.length - 1].timestamp : 'N/A' %></strong></p>
+  <p class="status">Created At: <strong><%= parcel.createdAt ? new Date(parcel.createdAt).toLocaleString() : 'Unknown' %></strong></p>
+  <p class="status">Last Updated: 
+    <strong>
+      <%= history.length ? new Date(history[history.length - 1].timestamp).toLocaleString() : 'N/A' %>
+    </strong>
+  </p>
   <p class="status">Current Location: <strong><%= currentLocation %></strong></p>
 
   <% if (isDelivered) { %>
-    <p class="delivered">Parcel Delivered!</p>
+    <p class="delivered">✅ Parcel Delivered!</p>
   <% } %>
 
   <div class="progress-bar">
     <span style="width: <%= ((currentStep + 1) / locations.length) * 100 %>%;"></span>
   </div>
 
-  <h2>Tracking History</h2>
+  <h2 style="margin-top: 30px;">Tracking History</h2>
   <ul>
     <% history.forEach(event => { %>
       <li>
-        <span class="status"><%= event.location %></span><br>
-        <span class="location">Timestamp: <%= event.timestamp %></span>
+        <div class="status"><%= event.location %></div>
+        <div class="location">Timestamp: <%= new Date(event.timestamp).toLocaleString() %></div>
       </li>
     <% }) %>
   </ul>
 
   <p class="tracking-link">
-    Share this link with others: 
+    Share this link: 
     <a href="/track/<%= trackingNumber %>">/track/<%= trackingNumber %></a>
   </p>
 </body>
