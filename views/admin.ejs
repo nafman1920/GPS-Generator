@@ -5,123 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Dashboard - Parcel Tracking</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #333;
-    }
-    .generate-form {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 30px;
-    }
-    .generate-form button {
-      background: #4caf50;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 5px;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    .generate-form button:hover {
-      background: #45a049;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    table th, table td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: center;
-    }
-    table th {
-      background: #f3f3f3;
-      font-weight: bold;
-    }
-    .status.in-transit {
-      color: orange;
-      font-weight: bold;
-    }
-    .status.delivered {
-      color: green;
-      font-weight: bold;
-    }
-    .link {
-      color: #007bff;
-      text-decoration: none;
-    }
-    .link:hover {
-      text-decoration: underline;
-    }
-    .logout {
-      text-align: center;
-      margin-top: 20px;
-    }
-    .logout a {
-      color: red;
-      text-decoration: none;
-      font-weight: bold;
-    }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+    .container { max-width: 1100px; margin: auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    h1, h2 { text-align: center; color: #333; }
+    .generate-form { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+    .generate-form select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 220px; }
+    .generate-form button { background: #4caf50; color: white; border: none; padding: 12px 20px; border-radius: 5px; font-size: 1em; cursor: pointer; }
+    .generate-form button:hover { background: #45a049; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    table th, table td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+    table th { background: #f3f3f3; font-weight: bold; }
+    .status.in-transit { color: orange; font-weight: bold; }
+    .status.delivered { color: green; font-weight: bold; }
+    .status.suspended { color: red; font-weight: bold; }
+    .link { color: #007bff; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+    .suspend-btn form { display: inline-block; margin: 0 2px; }
+    .suspend-btn button { padding: 6px 12px; font-size: 0.9em; border: none; border-radius: 4px; cursor: pointer; }
+    .suspend-btn .suspend { background-color: red; color: white; }
+    .suspend-btn .resume { background-color: green; color: white; }
+    .progress { font-size: 0.9em; margin-top: 4px; }
+    .logout { text-align: center; margin-top: 20px; }
+    .logout a { color: red; text-decoration: none; font-weight: bold; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Admin Dashboard</h1>
 
-    <!-- Generate New Tracking Number -->
+    <!-- Generate New Parcel -->
     <form class="generate-form" action="/admin/generate" method="POST">
+      <select name="pickupLocation" required>
+        <option value="">Select Pickup City/Country</option>
+        <% countries.forEach(c => { %>
+          <option value="<%= c.capital + ', ' + c.country %>"><%= c.capital %>, <%= c.country %></option>
+        <% }) %>
+      </select>
+
+      <select name="deliveredLocation" required>
+        <option value="">Select Destination City/Country</option>
+        <% countries.forEach(c => { %>
+          <option value="<%= c.capital + ', ' + c.country %>"><%= c.capital %>, <%= c.country %></option>
+        <% }) %>
+      </select>
+
       <button type="submit">Generate Tracking Number</button>
     </form>
 
-    <!-- List of Tracking Numbers -->
+    <!-- List of Parcels -->
     <h2>Generated Parcels</h2>
     <table>
       <thead>
         <tr>
           <th>Tracking Number</th>
           <th>Created At</th>
+          <th>Pickup</th>
+          <th>Destination</th>
           <th>Current Location</th>
           <th>Status</th>
+          <th>Progress</th>
           <th>Link</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <% if (parcels.length === 0) { %>
           <tr>
-            <td colspan="5">No tracking numbers generated yet.</td>
+            <td colspan="9">No tracking numbers generated yet.</td>
           </tr>
         <% } else { %>
           <% parcels.forEach(parcel => { 
-               const isDelivered = parcel.currentLocation.toLowerCase() === 'delivered';
+               const lastStepIndex = parcel.currentStep || 0;
+               const totalSteps = parcel.route ? parcel.route.length : 1;
+               const currentLoc = parcel.currentLocation || 'Awaiting pickup';
+               const isDelivered = lastStepIndex >= totalSteps - 1;
           %>
             <tr>
               <td><%= parcel.trackingNumber %></td>
               <td><%= new Date(parcel.createdAt).toLocaleString() %></td>
-              <td><%= parcel.currentLocation %></td>
-              <td class="status <%= isDelivered ? 'delivered' : 'in-transit' %>">
-                <%= isDelivered ? 'Delivered' : 'In Transit' %>
+              <td><%= parcel.pickupLocation %></td>
+              <td><%= parcel.deliveredLocation %></td>
+              <td><%= currentLoc %></td>
+              <td class="status <%= parcel.suspended ? 'suspended' : (isDelivered ? 'delivered' : 'in-transit') %>">
+                <% if (parcel.suspended) { %> Suspended <% } else if (isDelivered) { %> Delivered <% } else { %> In Transit <% } %>
               </td>
+              <td class="progress"><%= lastStepIndex + 1 %> / <%= totalSteps %></td>
               <td>
-                <a class="link" href="/track/<%= parcel.trackingNumber %>" target="_blank">
-                  View Parcel
-                </a>
+                <a class="link" href="/track/<%= parcel.trackingNumber %>" target="_blank">View Parcel</a>
+              </td>
+              <td class="suspend-btn">
+                <% if (!parcel.suspended) { %>
+                  <form action="/admin/suspend/<%= parcel.trackingNumber %>" method="POST">
+                    <button type="submit" class="suspend">Suspend</button>
+                  </form>
+                <% } else { %>
+                  <form action="/admin/resume/<%= parcel.trackingNumber %>" method="POST">
+                    <button type="submit" class="resume">Resume</button>
+                  </form>
+                <% } %>
               </td>
             </tr>
           <% }) %>

@@ -1,85 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Parcel Tracking</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parcel Tracking System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 0;
+      background: #f9f9f9;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
+      margin: 0;
     }
-
     .container {
       background: #fff;
-      padding: 30px;
+      padding: 40px;
       border-radius: 10px;
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 500px;
       width: 100%;
-      max-width: 400px;
+      text-align: center;
     }
-
     h1 {
       margin-bottom: 20px;
-      font-size: 1.8em;
       color: #333;
     }
-
-    form input[type="text"] {
-      padding: 10px;
+    p {
+      margin-bottom: 30px;
+      color: #555;
+    }
+    form input {
       width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
       border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-bottom: 15px;
+      border-radius: 6px;
       font-size: 1em;
     }
-
-    button {
-      background: #4caf50;
-      color: #fff;
-      border: none;
-      padding: 12px;
+    form button {
       width: 100%;
-      border-radius: 5px;
+      padding: 12px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
       font-size: 1em;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
-
-    button:hover {
-      background: #45a049;
+    form button:hover {
+      background-color: #45a049;
     }
-
-    .footer {
+    .admin-link {
       margin-top: 20px;
+      display: block;
       font-size: 0.9em;
-      color: #777;
+      color: #007bff;
+      text-decoration: none;
+    }
+    .admin-link:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 30px 20px; }
     }
   </style>
 </head>
 <body>
-  <main class="container">
-    <h1>Track Your Parcel</h1>
+  <div class="container">
+    <h1>Parcel Tracking System</h1>
+    <p>Enter your tracking number below to see the current status of your parcel.</p>
+
+    <!-- Form posts to /track route in index.js -->
     <form action="/track" method="POST" autocomplete="off">
-      <input 
-        type="text" 
-        name="trackingNumber" 
-        placeholder="Enter tracking number" 
-        required 
-        aria-label="Tracking Number"
-      />
+      <input type="text" name="trackingNumber" placeholder="Enter Tracking Number" required />
       <button type="submit">Track Parcel</button>
     </form>
-    <div class="footer">
-      <p>Powered by Parcel Tracking System</p>
-    </div>
-  </main>
+
+    <!-- Optional admin login -->
+    <a class="admin-link" href="/admin/login">Admin Login</a>
+  </div>
 </body>
 </html>
