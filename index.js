@@ -255,17 +255,19 @@ app.post('/admin/generate', ensureAdmin, async (req, res) => {
 
   try {
     const route = generateRoute(pickupLocation, deliveredLocation);
+
     await Parcel.create({
       trackingNumber,
       createdAt,
       pickupLocation,
       deliveredLocation,
       route,
+      currentStep: 0,
+      currentLocation: pickupLocation, // ✅ add this!
       suspended: false,
       lastUpdated: createdAt
     });
 
-    // Insert first history entry (pickup)
     await History.create({
       trackingNumber,
       location: pickupLocation,
@@ -275,18 +277,20 @@ app.post('/admin/generate', ensureAdmin, async (req, res) => {
 
     res.redirect('/admin');
   } catch (err) {
-    console.error(err);
+    console.error("❌ Parcel generation failed:", err);
     res.status(500).send("DB error");
   }
 });
+
 // Suspend a Parcel
 app.post('/admin/suspend/:trackingNumber', ensureAdmin, async (req, res) => {
-  const { trackingNumber } = req.params;
+  const trackingNumber = req.params.trackingNumber.toUpperCase(); // ✅ fix
 
   try {
     const parcel = await Parcel.findOne({ trackingNumber });
 
     if (!parcel) {
+      console.log("Parcel not found:", trackingNumber);
       return res.status(404).send('Parcel not found.');
     }
 
@@ -295,14 +299,15 @@ app.post('/admin/suspend/:trackingNumber', ensureAdmin, async (req, res) => {
 
     res.redirect('/admin');
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error suspending parcel:", err);
     res.status(500).send('Error suspending parcel.');
   }
 });
 
+
 // Resume Parcel Movement
 app.post('/admin/resume/:trackingNumber', ensureAdmin, async (req, res) => {
-  const { trackingNumber } = req.params;
+const trackingNumber = req.params.trackingNumber.toUpperCase(); // ✅ fix
 
   try {
     const parcel = await Parcel.findOne({ trackingNumber });
