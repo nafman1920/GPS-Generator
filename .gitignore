@@ -12,3 +12,9 @@ tracking.db
 
 # Logs
 npm-debug.log*
+# Ignore node_modules (common for Node.js projects)
+node_modules/
+
+# Ignore fix-db.js (temporary or local-only script)
+fix-db.js
+# Ignore .env file (environment variables)

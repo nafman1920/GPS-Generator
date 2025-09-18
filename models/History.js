@@ -5,21 +5,31 @@ const historySchema = new mongoose.Schema({
     type: String,
     required: true,
     uppercase: true,
-    index: true, // for faster querying
+    index: true,
   },
   location: {
     type: String,
-    required: true,
+    required: false, // optional for suspend/resume events
   },
   status: {
     type: String,
     required: true,
-    enum: ["Created", "In Transit", "Delivered", "Suspended"], // restrict status
-    default: "Created"
+    enum: [
+      "Parcel received at origin facility",
+      "Parcel in transit",
+      "Parcel in customs custody",
+      "Parcel delivered",
+      "Parcel suspended",
+      "Parcel resumed"
+    ],
+  },
+  isSuspended: {
+    type: Boolean,
+    default: false,
   },
   stepNumber: {
     type: Number,
-    default: 0, // step in the route (0 = pickup)
+    default: 0,
   },
   timestamp: {
     type: Date,

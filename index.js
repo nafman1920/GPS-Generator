@@ -32,6 +32,7 @@ app.use(session({
 // Full list of countries with capital and region
 const countries = [
   // Europe
+  
   { country: "Germany", capital: "Berlin", region: "Europe" },
   { country: "France", capital: "Paris", region: "Europe" },
   { country: "Italy", capital: "Rome", region: "Europe" },
@@ -47,9 +48,32 @@ const countries = [
   { country: "Greece", capital: "Athens", region: "Europe" },
   { country: "Norway", capital: "Oslo", region: "Europe" },
   { country: "Belgium", capital: "Brussels", region: "Europe" },
+  { country: "Austria", capital: "Vienna", region: "Europe" },
+  { country: "Denmark", capital: "Copenhagen", region: "Europe" },
+  { country: "Finland", capital: "Helsinki", region: "Europe" },
+  { country: "Hungary", capital: "Budapest", region: "Europe" },
+  { country: "Iceland", capital: "Reykjavik", region: "Europe" },
+  { country: "Latvia", capital: "Riga", region: "Europe" },
+  { country: "Lithuania", capital: "Vilnius", region: "Europe" },
+  { country: "Luxembourg", capital: "Luxembourg", region: "Europe" },
+  { country: "Malta", capital: "Valletta", region: "Europe" },
+  { country: "Moldova", capital: "Chișinău", region: "Europe" },
+  { country: "Monaco", capital: "Monaco", region: "Europe" },
+  { country: "Montenegro", capital: "Podgorica", region: "Europe" },
+  { country: "North Macedonia", capital: "Skopje", region: "Europe" },
+  { country: "San Marino", capital: "San Marino", region: "Europe" },
+  { country: "Serbia", capital: "Belgrade", region: "Europe" },
+  { country: "Slovakia", capital: "Bratislava", region: "Europe" },
+  { country: "Slovenia", capital: "Ljubljana", region: "Europe" },
+  { country: "Spain", capital: "Madrid", region: "Europe" },
+  { country: "Turkey", capital: "Ankara", region: "Europe" },
+  { country: "United Kingdom", capital: "London", region: "Europe" },
+  { country: "Vatican City", capital: "Vatican City", region: "Europe" },
+
+
 
   // Asia
-  { country: "Japan", capital: "Tokyo", region: "Asia" },
+   { country: "Japan", capital: "Tokyo", region: "Asia" },
   { country: "India", capital: "New Delhi", region: "Asia" },
   { country: "China", capital: "Beijing", region: "Asia" },
   { country: "South Korea", capital: "Seoul", region: "Asia" },
@@ -64,6 +88,34 @@ const countries = [
   { country: "Sri Lanka", capital: "Colombo", region: "Asia" },
   { country: "Nepal", capital: "Kathmandu", region: "Asia" },
   { country: "Mongolia", capital: "Ulaanbaatar", region: "Asia" },
+  { country: "Afghanistan", capital: "Kabul", region: "Asia" },
+  { country: "Armenia", capital: "Yerevan", region: "Asia" },
+  { country: "Azerbaijan", capital: "Baku", region: "Asia" },
+  { country: "Bahrain", capital: "Manama", region: "Asia" },
+  { country: "Brunei", capital: "Bandar Seri Begawan", region: "Asia" },
+  { country: "Cambodia", capital: "Phnom Penh", region: "Asia" },
+  { country: "Georgia", capital: "Tbilisi", region: "Asia" },
+  { country: "Iraq", capital: "Baghdad", region: "Asia" },
+  { country: "Israel", capital: "Jerusalem", region: "Asia" },
+  { country: "Jordan", capital: "Amman", region: "Asia" },
+  { country: "Kazakhstan", capital: "Nur-Sultan", region: "Asia" },
+  { country: "Kuwait", capital: "Kuwait City", region: "Asia" },
+  { country: "Kyrgyzstan", capital: "Bishkek", region: "Asia" },
+  { country: "Laos", capital: "Vientiane", region: "Asia" },
+  { country: "Lebanon", capital: "Beirut", region: "Asia" },
+  { country: "Maldives", capital: "Malé", region: "Asia" },
+  { country: "Myanmar", capital: "Naypyidaw", region: "Asia" },
+  { country: "Oman", capital: "Muscat", region: "Asia" },
+  { country: "Qatar", capital: "Doha", region: "Asia" },
+  { country: "Saudi Arabia", capital: "Riyadh", region: "Asia" },
+  { country: "Syria", capital: "Damascus", region: "Asia" },
+  { country: "Taiwan", capital: "Taipei", region: "Asia" },
+  { country: "Tajikistan", capital: "Dushanbe", region: "Asia" },
+  { country: "Timor-Leste", capital: "Dili", region: "Asia" },
+  { country: "Turkmenistan", capital: "Ashgabat", region: "Asia" },
+  { country: "United Arab Emirates", capital: "Abu Dhabi", region: "Asia" },
+  { country: "Uzbekistan", capital: "Tashkent", region: "Asia" },
+  { country: "Yemen", capital: "Sana'a", region: "Asia" },
 
   // North America
   { country: "United States", capital: "Washington, D.C.", region: "North America" },
@@ -284,47 +336,54 @@ app.post('/admin/generate', ensureAdmin, async (req, res) => {
 
 // Suspend a Parcel
 app.post('/admin/suspend/:trackingNumber', ensureAdmin, async (req, res) => {
-  const trackingNumber = req.params.trackingNumber.toUpperCase(); // ✅ fix
+  const trackingNumber = req.params.trackingNumber.toUpperCase();
 
   try {
     const parcel = await Parcel.findOne({ trackingNumber });
-
-    if (!parcel) {
-      console.log("Parcel not found:", trackingNumber);
-      return res.status(404).send('Parcel not found.');
-    }
+    if (!parcel) return res.status(404).send('Parcel not found.');
 
     parcel.suspended = true;
     await parcel.save();
 
+    await History.create({
+      trackingNumber,
+      status: "Parcel suspended",
+      isSuspended: true,
+      timestamp: new Date(),
+    });
+
     res.redirect('/admin');
   } catch (err) {
-    console.error("❌ Error suspending parcel:", err);
+    console.error("Error suspending parcel:", err);
     res.status(500).send('Error suspending parcel.');
   }
 });
 
-
 // Resume Parcel Movement
 app.post('/admin/resume/:trackingNumber', ensureAdmin, async (req, res) => {
-const trackingNumber = req.params.trackingNumber.toUpperCase(); // ✅ fix
+  const trackingNumber = req.params.trackingNumber.toUpperCase();
 
   try {
     const parcel = await Parcel.findOne({ trackingNumber });
-
-    if (!parcel) {
-      return res.status(404).send('Parcel not found.');
-    }
+    if (!parcel) return res.status(404).send('Parcel not found.');
 
     parcel.suspended = false;
     await parcel.save();
 
+    await History.create({
+      trackingNumber,
+      status: "Parcel resumed",
+      isSuspended: false,
+      timestamp: new Date(),
+    });
+
     res.redirect('/admin');
   } catch (err) {
-    console.error(err);
+    console.error("Error resuming parcel movement:", err);
     res.status(500).send('Error resuming parcel movement.');
   }
 });
+
 
 
 // ----------------- SERVER START -----------------

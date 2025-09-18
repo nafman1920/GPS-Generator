@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Parcel Tracking System</title>
   <style>
     body {
@@ -13,57 +13,81 @@
       align-items: center;
       height: 100vh;
       margin: 0;
+      padding: 15px;
     }
     .container {
       background: #fff;
-      padding: 40px;
+      padding: 40px 35px;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      max-width: 500px;
+      max-width: 480px;
       width: 100%;
       text-align: center;
     }
     h1 {
       margin-bottom: 20px;
       color: #333;
+      font-size: 2em;
     }
     p {
       margin-bottom: 30px;
       color: #555;
+      font-size: 1.1em;
     }
-    form input {
+    form input[type="text"] {
       width: 100%;
-      padding: 12px;
+      padding: 14px 12px;
       margin-bottom: 20px;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 1em;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    form input[type="text"]:focus {
+      border-color: #4caf50;
+      outline: none;
     }
     form button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       background-color: #4caf50;
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 1em;
+      border-radius: 8px;
+      font-size: 1.1em;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
     form button:hover {
       background-color: #45a049;
     }
     .admin-link {
-      margin-top: 20px;
-      display: block;
-      font-size: 0.9em;
+      margin-top: 25px;
+      display: inline-block;
+      font-size: 0.95em;
       color: #007bff;
       text-decoration: none;
+      transition: color 0.3s ease;
     }
     .admin-link:hover {
       text-decoration: underline;
+      color: #0056b3;
     }
     @media (max-width: 600px) {
-      .container { padding: 30px 20px; }
+      .container {
+        padding: 30px 20px;
+      }
+      h1 {
+        font-size: 1.6em;
+      }
+      p {
+        font-size: 1em;
+      }
+      form button, form input[type="text"] {
+        font-size: 1em;
+        padding: 12px;
+      }
     }
   </style>
 </head>

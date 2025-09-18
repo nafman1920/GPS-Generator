@@ -8,8 +8,15 @@ const routeStepSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Created", "In Transit", "Delivered", "Suspended"],
-    default: "Created"
+    enum: [
+      "Parcel received at origin facility",
+      "Parcel in transit",
+      "Parcel in customs custody",
+      "Parcel delivered",
+      "Parcel suspended",
+      "Parcel resumed"
+    ],
+    default: "Parcel received at origin facility"
   }
 }, { _id: false });
 
@@ -20,7 +27,7 @@ const parcelSchema = new mongoose.Schema({
     required: true,
     unique: true,
     uppercase: true,
-    index: true // faster query by trackingNumber
+    index: true
   },
   createdAt: {
     type: Date,
@@ -37,7 +44,7 @@ const parcelSchema = new mongoose.Schema({
   route: {
     type: [routeStepSchema],
     required: true,
-    default: [] // initialize empty array if no steps yet
+    default: []
   },
   currentStep: {
     type: Number,
@@ -57,7 +64,7 @@ const parcelSchema = new mongoose.Schema({
   }
 });
 
-// Optional: update lastUpdated whenever the document is modified
+// Update lastUpdated before save
 parcelSchema.pre('save', function(next) {
   this.lastUpdated = new Date();
   next();

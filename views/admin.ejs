@@ -5,28 +5,168 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Dashboard - Parcel Tracking</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
-    .container { max-width: 1100px; margin: auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    h1, h2 { text-align: center; color: #333; }
-    .generate-form { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-    .generate-form select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 220px; }
-    .generate-form button { background: #4caf50; color: white; border: none; padding: 12px 20px; border-radius: 5px; font-size: 1em; cursor: pointer; }
-    .generate-form button:hover { background: #45a049; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    table th, table td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-    table th { background: #f3f3f3; font-weight: bold; }
-    .status.in-transit { color: orange; font-weight: bold; }
-    .status.delivered { color: green; font-weight: bold; }
-    .status.suspended { color: red; font-weight: bold; }
-    .link { color: #007bff; text-decoration: none; }
-    .link:hover { text-decoration: underline; }
-    .suspend-btn form { display: inline-block; margin: 0 2px; }
-    .suspend-btn button { padding: 6px 12px; font-size: 0.9em; border: none; border-radius: 4px; cursor: pointer; }
-    .suspend-btn .suspend { background-color: red; color: white; }
-    .suspend-btn .resume { background-color: green; color: white; }
-    .progress { font-size: 0.9em; margin-top: 4px; }
-    .logout { text-align: center; margin-top: 20px; }
-    .logout a { color: red; text-decoration: none; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+    .generate-form {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .generate-form select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 220px;
+      min-width: 150px;
+    }
+    .generate-form button {
+      background: #4caf50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .generate-form button:hover {
+      background: #45a049;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 0.95em;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    table th {
+      background: #f3f3f3;
+      font-weight: bold;
+    }
+    .status.in-transit {
+      color: #ff9800;
+      font-weight: bold;
+    }
+    .status.delivered {
+      color: #4caf50;
+      font-weight: bold;
+    }
+    .status.suspended {
+      color: #f44336;
+      font-weight: bold;
+    }
+    .link {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+    .suspend-btn form {
+      display: inline-block;
+      margin: 0 2px;
+    }
+    .suspend-btn button {
+      padding: 6px 12px;
+      font-size: 0.9em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .suspend-btn .suspend {
+      background-color: #f44336;
+      color: white;
+    }
+    .suspend-btn .suspend:hover {
+      background-color: #d32f2f;
+    }
+    .suspend-btn .resume {
+      background-color: #4caf50;
+      color: white;
+    }
+    .suspend-btn .resume:hover {
+      background-color: #388e3c;
+    }
+    .progress {
+      font-size: 0.9em;
+      margin-top: 4px;
+      color: #555;
+    }
+    .logout {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .logout a {
+      color: #f44336;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+    .logout a:hover {
+      color: #c62828;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 900px) {
+      .generate-form {
+        flex-direction: column;
+        align-items: center;
+      }
+      .generate-form select, .generate-form button {
+        width: 100%;
+        max-width: 300px;
+      }
+      table th, table td {
+        padding: 8px;
+        font-size: 0.85em;
+      }
+      .suspend-btn button {
+        padding: 5px 10px;
+        font-size: 0.8em;
+      }
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      .container {
+        padding: 20px 15px;
+      }
+      table {
+        font-size: 0.8em;
+      }
+      table th, table td {
+        padding: 6px;
+      }
+      .suspend-btn button {
+        padding: 4px 8px;
+        font-size: 0.75em;
+      }
+    }
   </style>
 </head>
 <body>
@@ -91,7 +231,7 @@
               </td>
               <td class="progress"><%= lastStepIndex + 1 %> / <%= totalSteps %></td>
               <td>
-                <a class="link" href="/track/<%= parcel.trackingNumber %>" target="_blank">View Parcel</a>
+                <a class="link" href="/track/<%= parcel.trackingNumber %>" target="_blank" rel="noopener noreferrer">View Parcel</a>
               </td>
               <td class="suspend-btn">
                 <% if (!parcel.suspended) { %>
